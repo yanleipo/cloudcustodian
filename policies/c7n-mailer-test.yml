@@ -1,0 +1,18 @@
+policies:
+  - name: c7n-mailer-test
+    resource: sqs
+    filters: 
+      - "tag:MailerTest": absent
+    actions:
+      - type: notify
+        to:
+          - slack://webhook/#support-aws-resource-alerts
+          - https://hooks.slack.com/services/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
+          - slack://webhook/#custodian-app
+          - https://hooks.slack.com/services/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
+        transport:
+          type: sqs
+          queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
+          region: us-west-1
+        violation_desc: "Description of violation"
+        action_desc: "Report Only"

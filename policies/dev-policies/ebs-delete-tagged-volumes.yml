@@ -1,0 +1,11 @@
+policies:
+  - name: ebs-marked-delete
+    resource: ebs
+    comment: |
+      Will instantly delete any volume tagged with maid_status. Not 
+      for main use but can be used if do not want to wait for recurring script.
+      use ebs-volume-delete instead for general use. 
+    filters:
+      - "tag:maid_status": not-null
+    actions:
+      - delete

@@ -1,0 +1,17 @@
+policies:
+        - name: ami-deregister-old
+          resource: ami
+          description: |
+                Delete AMI that are older than 14 days
+          filters:
+                - type: image-age
+                  days: 14
+                  op: greater-than
+          mode:
+               schedule: rate(1 day)
+               type: periodic
+               role: arn:aws:iam::658670436913:role/CloudCustodian
+               execution-options:
+                        output_dir: s3://cloud-custodian-log/ami_cleanup  
+          actions:
+                - deregister

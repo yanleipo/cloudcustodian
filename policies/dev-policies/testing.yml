@@ -1,0 +1,7 @@
+policies:
+  - name: ebs-marked-delete
+    resource: ebs
+    filters:
+      - "tag:maid_status": not-null
+    actions:
+      - delete

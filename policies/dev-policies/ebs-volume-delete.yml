@@ -1,0 +1,49 @@
+policies:
+  - name: ebs-volume-mark-unattached-delete
+    resource: ebs
+    comments: |
+      Mark unattached EBS volumes for deletion in 1 day.
+    filters:
+      - Attachments: []
+    mode:
+      # schedule: rate(6 hours)
+      schedule: "cron(0 0/6 * * ? *)"
+      type: periodic
+      role: arn:aws:iam::658670436913:role/CloudCustodian
+      execution-options:
+              output_dir: s3://cloud-custodian-log/ebs_volume_cleanup
+    actions:
+      - type: mark-for-op
+        op: delete
+        hours: 6
+
+  - name: ebs-unmark-delete-attached-volumes
+    resource: ebs
+    filters:
+      - type: value
+        key: "Attachements[0].Device"
+        value: not-null
+      - "tag:maid_status": not-null
+    mode:
+      # schedule: rate(6 hours)
+      schedule: "cron(0 0/6 * * ? *)"
+      type: periodic
+      role: arn:aws:iam::658670436913:role/CloudCustodian
+      execution-options:
+              output_dir: s3://cloud-custodian-log/ebs_volume_cleanup  
+    actions:
+      - unmark
+
+  - name: ebs-marked-delete
+    resource: ebs
+    filters:
+      - "tag:maid_status": not-null
+    mode:
+      # schedule: rate(6 hours)
+      schedule: "cron(0 0/6 * * ? *)"
+      type: periodic
+      role: arn:aws:iam::658670436913:role/CloudCustodian
+      execution-options:
+              output_dir: s3://cloud-custodian-log/ebs_volume_cleanup
+    actions:
+      - delete

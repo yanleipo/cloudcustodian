@@ -1,0 +1,10 @@
+policies:
+        - name: ec2-terminate-old-instances
+          resource: ec2
+          description: |
+                terminates ec2 instances that are older than 30 days
+          filters:
+                -  
+          actions: 
+                
+

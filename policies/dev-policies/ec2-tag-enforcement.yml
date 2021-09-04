@@ -1,0 +1,74 @@
+policies:
+        - name: ec2-tag-compliance-mark
+          resource: ec2
+          comment: |
+                Find instances that are not compliant to the
+                tagging policies, tag them for stoppage in 1 day, 
+                and send a notification
+          filters:
+                - "tag:owner": absent
+                - "tag:days": absent
+          mode:
+                schedule: "rate(60 minutes)"
+                type: periodic
+                execution-options:
+                        output_dir: s3://Custodian_Logs/CustodianLogs/{account_id}/
+          actions:
+                - type: mark-for-op
+                  tag: tag-non-compliant
+                  op: stop
+                  days: 1
+                - type: notify
+                  action_desc: |
+                        Offending EC2 instance(s) are now marked to be stopped if
+                        the required tags are not added within 24 hours.
+                  subject: "ec2 Tag Compliance"
+                  to: ["slack"]
+                  transport:
+                  violation_desc: "EC2 instances must have the required tags." 
+                  
+
+        - name: ec2-tag-compliance-unmark
+          resource: ec2
+          comment: |
+                Unmark previously marked instances that now have
+                the proper tags
+          filters:
+          mode:
+                schedule: "rate(30 minutes)"
+                type: periodic
+
+          actions:
+
+        - name: ec2-tag-compliance-stop
+          resource: ec2
+          comment: |
+                Schedule instances marked as non-compliant for stoppage
+          filters:
+          mode:
+                schedule: "rate(60 minutes)"
+                type: periodic
+          actions:
+
+        - name: ec2-tag-compliance-terminate
+          resource: ec2
+          comment: |
+                Terminate stopped instances.
+          filters:
+          mode:
+                schedule: "rate(6 hours)"
+                type: periodic
+          actions:
+
+        - name: ec2-tag-compliance-nag-stop
+          resource: ec2
+          comment: |
+                stop all instances marked for termination every hour,
+                starting 24 hours before termination and nag about 
+                compliance
+          filters:
+          mode:
+                schedule: "rate(60 minutes)"
+                type: periodic
+          actions:
+

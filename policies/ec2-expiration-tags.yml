@@ -1,0 +1,64 @@
+# Reference: https://cloudcustodian.io/docs/filters.html#value-filter
+policies:         
+  
+  - name: ec2-tag-expiry-delete
+    resource: ec2
+    comments: |
+      Will delete an instance if the expiry date has arrived.
+    filters:
+      - type: value
+        key: "tag:Expiry"
+        op: less-than
+        value_type: expiration
+        value: 0
+    mode:
+      schedule: "cron(0/5 * * * ? *)"
+      type: periodic
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+    actions:
+      - type: terminate 
+        force: true
+      - type: notify
+        action_desc: |
+          Instance has reached the expiration date and has been terminated. No action required. 
+        cc: ["#000000"]
+        subject: "EC2 Expiration termination"
+        to:
+          - https://hooks.slack.com/services/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
+        transport:
+          type: sqs
+          queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
+        violation_desc: "EC2 instances exceeded expiry date."
+
+  - name: ec2-expiration-warning
+    resource: ec2
+    comments: |
+      Will send a warning to the slack channel if the resource is set to 
+      expire in 2 days. Uses the yyyy/mm/dd format
+    filters:
+      - "tag:c7n_tag_expiry": absent
+      - type: value
+        key: "tag:Expiry"
+        op: less-than
+        value_type: expiration
+        value: 2
+    mode:
+      schedule: "cron(0/5 * * * ? *)"
+      type: periodic
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+    actions:
+      - type: tag
+        tag: c7n_tag_expiry
+        value: warning
+      - type: notify
+        violation_desc: Instance will reach the expiration date within 2 days
+        action_desc: |
+          This EC2 instances will reach its expiration date within 2 days, after which
+          it will be deleted. 
+        subject: "EC2 tag Compliance"
+        to: 
+          - https://hooks.slack.com/services/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
+        transport:
+          type: sqs
+          queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
+          region: us-west-1
