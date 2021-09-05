@@ -7,6 +7,10 @@ policies:
       Will delete an instance if the expiry date has arrived.
     filters:
       - type: value
+        key: "State.Name"
+        value: "terminated" 
+        op: ne
+      - type: value
         key: "tag:Expiry"
         op: less-than
         value_type: expiration
@@ -24,7 +28,7 @@ policies:
         cc: ["#000000"]
         subject: "EC2 Expiration termination"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
@@ -57,7 +61,7 @@ policies:
           it will be deleted. 
         subject: "EC2 tag Compliance"
         to: 
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer

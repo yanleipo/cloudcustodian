@@ -1,0 +1,59 @@
+policies:
+  - name: ebs-volume-mark-unattached-delete
+    resource: ebs
+    comments: |
+      Mark unattached EBS volumes for deletion in 1 day.
+    filters:
+      - Attachments: []
+    mode:
+      # schedule: rate(6 hours)
+      #schedule: "cron(0 0/6 * * ? *)"
+      schedule: "cron(0/5 0 * * ? *)"
+      type: periodic
+      role: arn:aws:iam::658670436913:role/CloudCustodian
+    actions:
+      - type: mark-for-op
+        op: delete
+        #hours: 6
+        hours: 0.1
+
+  - name: ebs-unmark-delete-attached-volumes
+    resource: ebs
+    filters:
+      - type: value
+        key: "Attachements[0].Device"
+        value: not-null
+      - "tag:maid_status": not-null
+    mode:
+      # schedule: rate(6 hours)
+      #schedule: "cron(0 0/6 * * ? *)"
+      schedule: "cron(0/5 0 * * ? *)"
+      type: periodic
+      role: arn:aws:iam::658670436913:role/CloudCustodian
+    actions:
+      - unmark
+
+  # - name: ebs-marked-delete
+  #   resource: ebs
+  #   filters:
+  #     - "tag:maid_status": not-null
+  #   mode:
+  #     # schedule: rate(6 hours)
+  #     #schedule: "cron(0 0/6 * * ? *)"
+  #     schedule: "cron(0/7 0 * * ? *)"
+  #     type: periodic
+  #     role: arn:aws:iam::658670436913:role/CloudCustodian
+  #   actions:
+  #     - delete
+  #     - type: notify
+  #       action_desc: |
+  #         Marked EBS volume that was not attached has been terminated.
+  #         No further action required.
+  #       cc: ["#000000"]
+  #       subject: "EC2 Tag Compliance"
+  #       to:
+  #         - https://hooks.slack.com/services/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
+  #       transport:
+  #         type: sqs
+  #         queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
+  #       violation_desc: "EBS Volume must be attached."

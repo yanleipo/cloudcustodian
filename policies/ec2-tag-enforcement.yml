@@ -25,6 +25,7 @@ policies:
       - type: auto-tag-user
         tag: Owner
 
+
   - name: ec2-tag-enforcement-mark
     resource: ec2
     comments: |
@@ -38,12 +39,13 @@ policies:
     mode:
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
-      schedule: "cron(0/5 * * * ? *)" 
+      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
     actions: 
       - type: mark-for-op
         tag: c7n_tag_compliance
         op: stop
-        hours: 1
+        #hours: 1
+        hours: 0.3
       - type: notify
         violation_desc: Resource is missing either the Owner or Expiry tags
         action_desc: |
@@ -51,7 +53,7 @@ policies:
           stopped in one hour if the tags are not added. 
         subject: "EC2 tag Compliance"
         to: 
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
@@ -79,11 +81,12 @@ policies:
         cc: ["good"]
         subject: "EC2 tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
           region: us-west-1
+
   - name: ec2-tag-compliance-stop
     resource: ec2
     description: |
@@ -96,7 +99,8 @@ policies:
           - "tag:Owner": absent
           - "tag:Expiry": absent
     mode:
-      schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
+      #schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
+      schedule: "cron(0/10 * * * ? *)" #Run every 3 hours
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
     actions:
@@ -104,7 +108,8 @@ policies:
       - type: mark-for-op
         tag: c7n_tag_compliance
         op: terminate
-        hours: 3
+        #hours: 3
+        hours: 0.4
       - type: notify
         action_desc: |
           Untagged EC2 instances have been "stopped" and are now marked to be terminated in one day if the 
@@ -112,11 +117,12 @@ policies:
         cc: ["warning"]
         subject: "EC2 Tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
           region: us-west-1
+
   - name: ec2-tag-enforcement-terminate
     resource: ec2
     description: |
@@ -129,7 +135,8 @@ policies:
         - "tag:Owner": absent
         - "tag:Expiry": absent
     mode: 
-      schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
+      #schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
+      schedule: "cron(0/10 * * * ? *)" #Run every 3 hours
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
     actions:
@@ -142,7 +149,7 @@ policies:
         cc: ["#000000"]
         subject: "EC2 Tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
