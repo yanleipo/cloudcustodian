@@ -1,6 +1,5 @@
 # queue to listen to for messages
 queue_url: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
-slack_token: xoxb-18877661168-2364837617089-KcBd9J7cjRFQHcBr7VUlQM0i
 
 #default from address
 from_address: leipo.yan@solace.com
@@ -12,4 +11,4 @@ from_address: dedrick.tan@solace.com
 # Standard Lambda Function Config
 region: us-west-1
 role: arn:aws:iam::124361335672:role/CloudCustodian
-slack_webhook: https://hooks.slack.com/services/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
+slack_webhook: <slack_webhook>
