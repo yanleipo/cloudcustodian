@@ -50,8 +50,7 @@ policies:
       - type: mark-for-op
         tag: c7n_tag_compliance
         op: stop
-        #hours: 1
-        hours: 0.2
+        hours: 1
       - type: notify
         violation_desc: Resource is missing either the Owner or Expiry tags
         action_desc: |
@@ -80,7 +79,7 @@ policies:
     mode: 
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
-      schedule:  "cron(0/120 * * * ? *)" #Run every 2 hours
+      schedule:  "cron(0/15 * * * ? *)" #Run every 15 mins
     actions: 
       - type: remove-tag
         tags: [c7n_tag_compliance]
@@ -112,8 +111,7 @@ policies:
         tag: c7n_tag_compliance
         op: stop
     mode:
-      #schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
-      schedule: "cron(0/3 * * * ? *)" #Run every 3 hours
+      schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
     actions:
@@ -121,8 +119,7 @@ policies:
       - type: mark-for-op
         tag: c7n_tag_compliance
         op: terminate
-        #hours: 3
-        hours: 0.05
+        hours: 3
       - type: notify
         action_desc: |
           Untagged EC2 instances have been "stopped" and are now marked to be terminated in one day if the 
@@ -152,8 +149,7 @@ policies:
         tag: c7n_tag_compliance
         op: terminate
     mode: 
-      #schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
-      schedule: "cron(0/2 * * * ? *)" #Run every 3 hours
+      schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
     actions:

@@ -40,14 +40,12 @@ policies:
     mode:
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
-      #schedule: "cron(0 0/6 * * ? *)"
-      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
+      schedule: "cron(0 0/3 * * ? *)" #Run every 3 hours
     actions: 
       - type: mark-for-op
         tag: c7n_attach_tag_compliance
         op: delete
-        #hours: 6
-        hours: 0.1
+        hours: 3
 
   ##################################
   # policy: ebs-unmark-delete-attached-volumes:
@@ -71,8 +69,7 @@ policies:
     mode:
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
-      #schedule: "cron(0 0/6 * * ? *)"
-      schedule: "cron(0/6 * * * ? *)" #Run every 5 mins
+      schedule: "cron(0 0/3 * * ? *)" #Run every 3 hours
     actions:
       - unmark
       - type: remove-tag
@@ -95,8 +92,7 @@ policies:
     mode:
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
-      #schedule: "cron(0 0/6 * * ? *)"
-      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
+      schedule: "cron(0 0/3 * * ? *)" #Run every 3 hours
     actions:
       - delete
       - type: notify
@@ -129,8 +125,7 @@ policies:
     mode:
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
-      #schedule: "cron(0 0/6 * * ? *)"
-      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
+      schedule: "cron(0 0/3 * * ? *)"  #Run every 3 hours
     actions:
       - delete
       - type: notify
