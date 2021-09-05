@@ -26,6 +26,7 @@ policies:
       - type: terminate 
         force: true
       - type: notify
+        slack_template: slack_solace
         action_desc: |
           Instance has reached the expiration date and has been terminated. No action required. 
         cc: ["#000000"]
@@ -61,6 +62,7 @@ policies:
         tag: c7n_tag_expiry
         value: warning
       - type: notify
+        slack_template: slack_solace
         violation_desc: Instance will reach the expiration date within 2 days
         action_desc: |
           This EC2 instances will reach its expiration date within 2 days, after which

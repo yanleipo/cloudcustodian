@@ -96,6 +96,7 @@ policies:
     actions:
       - delete
       - type: notify
+        slack_template: slack_solace
         action_desc: |
           Marked EBS volume that is not attached has been terminated.
           No further action required.
@@ -129,6 +130,7 @@ policies:
     actions:
       - delete
       - type: notify
+        slack_template: slack_solace
         action_desc: |
           EBS volume that has expired and unattached has been deleted.
           No further action required.

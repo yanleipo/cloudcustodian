@@ -5,6 +5,7 @@ policies:
       - "tag:MailerTest": absent
     actions:
       - type: notify
+        slack_template: slack_solace
         to:
           - slack://webhook/#support-aws-resource-alerts
           - <slack_webhook>

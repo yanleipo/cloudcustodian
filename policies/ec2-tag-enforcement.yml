@@ -52,6 +52,7 @@ policies:
         op: stop
         hours: 1
       - type: notify
+        slack_template: slack_solace
         violation_desc: Resource is missing either the Owner or Expiry tags
         action_desc: |
           EC2 instances that lack the required tags are marked to be 
@@ -84,6 +85,7 @@ policies:
       - type: remove-tag
         tags: [c7n_tag_compliance]
       - type: notify
+        slack_template: slack_solace
         action_desc: |
           EC2 instance(s) are no longer marked to be stopped
         cc: ["good"]
@@ -121,6 +123,7 @@ policies:
         op: terminate
         hours: 3
       - type: notify
+        slack_template: slack_solace
         action_desc: |
           Untagged EC2 instances have been "stopped" and are now marked to be terminated in one day if the 
           tags are not added.
@@ -156,6 +159,7 @@ policies:
       - type: terminate 
         force: true
       - type: notify
+        slack_template: slack_solace
         action_desc: |
           Marked EC2 instances that have not added the required tags have been terminated.
           No further action required.
