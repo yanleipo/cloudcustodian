@@ -7,7 +7,7 @@ policies:
       - type: notify
         to:
           - slack://webhook/#support-aws-resource-alerts
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer

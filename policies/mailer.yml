@@ -12,4 +12,4 @@ from_address: dedrick.tan@solace.com
 # Standard Lambda Function Config
 region: us-west-1
 role: arn:aws:iam::124361335672:role/CloudCustodian
-slack_webhook: https://hooks.slack.com/services/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
+slack_webhook: https://hooks.slack.com/services/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
