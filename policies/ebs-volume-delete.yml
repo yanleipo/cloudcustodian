@@ -1,59 +1,147 @@
 policies:
+
+  ##################################
+  # policy: ebs-auto-tag-owner:
+  ##################################
+  - name: ebs-auto-tag-owner
+    resource: ebs
+    description: |
+      Triggered when a new EBS volume is created. Checks to see if
+      it's missing the Owner tag. If missing it gets created
+      with the value of the ID of whomever called the CreateVolume API
+      Note: This requires cloudtrail to be enabled for the region
+    mode:
+      type: cloudtrail
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+      events:
+        - CreateVolume
+    filters:
+      - "tag:Owner": absent
+    actions:
+      - type: auto-tag-user
+        tag: Owner
+
+  ##################################
+  # policy: ebs-volume-mark-unattached-delete:
+  ##################################
   - name: ebs-volume-mark-unattached-delete
     resource: ebs
-    comments: |
-      Mark unattached EBS volumes for deletion in 1 day.
+    description: |
+      Mark unattached EBS volumes for deletion if:
+        - The EBS volume has not been marked
+        - The EBS volume is not attached or tagged with Owner and Expiry
     filters:
-      - Attachments: []
+      - and:
+        - "tag:c7n_attach_tag_compliance": absent
+        - Attachments: []
+        - or:
+          - "tag:Owner": absent
+          - "tag:Expiry": absent
     mode:
-      # schedule: rate(6 hours)
-      #schedule: "cron(0 0/6 * * ? *)"
-      schedule: "cron(0/5 0 * * ? *)"
       type: periodic
-      role: arn:aws:iam::658670436913:role/CloudCustodian
-    actions:
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+      #schedule: "cron(0 0/6 * * ? *)"
+      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
+    actions: 
       - type: mark-for-op
+        tag: c7n_attach_tag_compliance
         op: delete
         #hours: 6
         hours: 0.1
 
+  ##################################
+  # policy: ebs-unmark-delete-attached-volumes:
+  ##################################
   - name: ebs-unmark-delete-attached-volumes
     resource: ebs
+    description: |
+      Unark the marked EBS volumes for deletion if:
+        - The EBS volume has been marked
+        - The EBS volume is attached or tagged with Owner and Expiry
     filters:
-      - type: value
-        key: "Attachements[0].Device"
-        value: not-null
-      - "tag:maid_status": not-null
+      - and:
+        - "tag:c7n_attach_tag_compliance": not-null
+        - or:
+          - type: value
+            key: "Attachements[0].Device"
+            value: not-null
+          - and:
+            - "tag:Owner": not-null
+            - "tag:Expiry": not-null
     mode:
-      # schedule: rate(6 hours)
-      #schedule: "cron(0 0/6 * * ? *)"
-      schedule: "cron(0/5 0 * * ? *)"
       type: periodic
-      role: arn:aws:iam::658670436913:role/CloudCustodian
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+      #schedule: "cron(0 0/6 * * ? *)"
+      schedule: "cron(0/6 * * * ? *)" #Run every 5 mins
     actions:
       - unmark
+      - type: remove-tag
+        tags: [c7n_attach_tag_compliance]
 
-  # - name: ebs-marked-delete
-  #   resource: ebs
-  #   filters:
-  #     - "tag:maid_status": not-null
-  #   mode:
-  #     # schedule: rate(6 hours)
-  #     #schedule: "cron(0 0/6 * * ? *)"
-  #     schedule: "cron(0/7 0 * * ? *)"
-  #     type: periodic
-  #     role: arn:aws:iam::658670436913:role/CloudCustodian
-  #   actions:
-  #     - delete
-  #     - type: notify
-  #       action_desc: |
-  #         Marked EBS volume that was not attached has been terminated.
-  #         No further action required.
-  #       cc: ["#000000"]
-  #       subject: "EC2 Tag Compliance"
-  #       to:
-  #         - https://hooks.slack.com/services/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
-  #       transport:
-  #         type: sqs
-  #         queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
-  #       violation_desc: "EBS Volume must be attached."
+  ##################################
+  # policy: ebs-marked-delete:
+  ##################################
+  - name: ebs-marked-delete
+    resource: ebs
+    description: |
+      Delete the marked EBS volumes for deletion if:
+        - The EBS volume has been marked
+        - The EBS volume is not attached
+    filters:
+      - Attachments: []
+      - type: marked-for-op
+        tag: c7n_attach_tag_compliance
+        op: delete
+    mode:
+      type: periodic
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+      #schedule: "cron(0 0/6 * * ? *)"
+      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
+    actions:
+      - delete
+      - type: notify
+        action_desc: |
+          Marked EBS volume that is not attached has been terminated.
+          No further action required.
+        cc: ["#000000"]
+        subject: "EBS Attach Tag Compliance"
+        to:
+          - https://hooks.slack.com/services/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
+        transport:
+          type: sqs
+          queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
+        violation_desc: "EBS Volume must be attached or tagged with Owner and Expiry."
+
+  ##################################
+  # policy: ebs-expiry-delete: 
+  ##################################
+  - name: ebs-expiry-delete
+    resource: ebs
+    description: |
+      Delete the marked EBS volumes if the Expiry tag has expired and it is not attached
+    filters:
+      - Attachments: []
+      - type: value
+        key: "tag:Expiry"
+        op: less-than
+        value_type: expiration
+        value: 0
+    mode:
+      type: periodic
+      role: arn:aws:iam::124361335672:role/CloudCustodian
+      #schedule: "cron(0 0/6 * * ? *)"
+      schedule: "cron(0/5 * * * ? *)" #Run every 5 mins
+    actions:
+      - delete
+      - type: notify
+        action_desc: |
+          EBS volume that has expired and unattached has been deleted.
+          No further action required.
+        cc: ["#000000"]
+        subject: "EBS Expiry Delete"
+        to:
+          - https://hooks.slack.com/services/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
+        transport:
+          type: sqs
+          queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
+        violation_desc: "EBS volume that has expired and unattached has been deleted"

@@ -8,11 +8,15 @@ vars:
     - "tag:Expiry": not-null
 
 policies:
+
+  ##################################
+  # policy: ec2-auto-tag-owner:
+  ##################################
   - name: ec2-auto-tag-owner
     resource: ec2
     description: |
       Triggered when a new EC2 Instance is launched. Checks to see if
-      it's missing the OwnerContact tag. If missing it gets created
+      it's missing the Owner tag. If missing it gets created
       with the value of the ID of whomever called the RunInstances API
     mode:
       type: cloudtrail
@@ -25,7 +29,9 @@ policies:
       - type: auto-tag-user
         tag: Owner
 
-
+  ##################################
+  # policy: ec2-tag-enforcement-mark:
+  ##################################
   - name: ec2-tag-enforcement-mark
     resource: ec2
     comments: |
@@ -45,7 +51,7 @@ policies:
         tag: c7n_tag_compliance
         op: stop
         #hours: 1
-        hours: 0.3
+        hours: 0.2
       - type: notify
         violation_desc: Resource is missing either the Owner or Expiry tags
         action_desc: |
@@ -53,12 +59,15 @@ policies:
           stopped in one hour if the tags are not added. 
         subject: "EC2 tag Compliance"
         to: 
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
           region: us-west-1
 
+  ##################################
+  # policy: ec2-tag-enforcement-unmark:
+  ##################################
   - name: ec2-tag-enforcement-unmark
     resource: ec2
     comment: | 
@@ -81,26 +90,30 @@ policies:
         cc: ["good"]
         subject: "EC2 tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
           region: us-west-1
 
+  ##################################
+  # policy: ec2-tag-compliance-stop:
+  ##################################
   - name: ec2-tag-compliance-stop
     resource: ec2
     description: |
-      Preform the stop operation on instances marked to be stopped today
+      Preform the stop operation on instances marked to be stopped today if they have not been stopped
     filters:
+      - type: value
+        key: "State.Name"
+        value: "stopped" 
+        op: ne
       - type: marked-for-op
         tag: c7n_tag_compliance
         op: stop
-      - or: 
-          - "tag:Owner": absent
-          - "tag:Expiry": absent
     mode:
       #schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
-      schedule: "cron(0/10 * * * ? *)" #Run every 3 hours
+      schedule: "cron(0/3 * * * ? *)" #Run every 3 hours
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
     actions:
@@ -109,7 +122,7 @@ policies:
         tag: c7n_tag_compliance
         op: terminate
         #hours: 3
-        hours: 0.4
+        hours: 0.05
       - type: notify
         action_desc: |
           Untagged EC2 instances have been "stopped" and are now marked to be terminated in one day if the 
@@ -117,26 +130,30 @@ policies:
         cc: ["warning"]
         subject: "EC2 Tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
           region: us-west-1
 
+  ##################################
+  # policy: ec2-tag-enforcement-terminate:
+  ##################################
   - name: ec2-tag-enforcement-terminate
     resource: ec2
     description: |
-      Terminate all stopped instances marked for termination that do not meet the tagging requirnments.
+      Terminate all stopped instances marked for termination that do not meet the tagging requirnments if they have not been terminated
     filters: 
+      - type: value
+        key: "State.Name"
+        value: "terminated" 
+        op: ne
       - type: marked-for-op
         tag: c7n_tag_compliance
         op: terminate
-      - or:
-        - "tag:Owner": absent
-        - "tag:Expiry": absent
     mode: 
       #schedule: "cron(0/180 * * * ? *)" #Run every 3 hours
-      schedule: "cron(0/10 * * * ? *)" #Run every 3 hours
+      schedule: "cron(0/2 * * * ? *)" #Run every 3 hours
       type: periodic
       role: arn:aws:iam::124361335672:role/CloudCustodian
     actions:
@@ -149,7 +166,7 @@ policies:
         cc: ["#000000"]
         subject: "EC2 Tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
