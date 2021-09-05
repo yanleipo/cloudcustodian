@@ -31,7 +31,7 @@ policies:
         cc: ["#000000"]
         subject: "EC2 Expiration termination"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
@@ -67,7 +67,7 @@ policies:
           it will be deleted. 
         subject: "EC2 tag Compliance"
         to: 
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
