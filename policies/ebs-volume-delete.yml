@@ -102,7 +102,7 @@ policies:
         cc: ["#000000"]
         subject: "EBS Attach Tag Compliance"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
@@ -135,7 +135,7 @@ policies:
         cc: ["#000000"]
         subject: "EBS Expiry Delete"
         to:
-          - https://hooks.slack.com/services/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
+          - https://hooks.slack.com/services/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
         transport:
           type: sqs
           queue: https://sqs.us-west-1.amazonaws.com/124361335672/custodian-mailer
